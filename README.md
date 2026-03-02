@@ -1,36 +1,223 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+
+<img src="https://33uee5uclf.ufs.sh/f/fa600f97-6cf2-4759-8641-3093d13591bf-6rrk6b.png" alt="Resonance" width="720" />
+
+<br />
+<br />
+
+<h1>Resonance</h1>
+
+<p>The open-source ElevenLabs alternative.</p>
+
+<p>AI-powered text-to-speech and voice cloning built with Next.js 16, React 19, and Chatterbox TTS.</p>
+
+<br />
+
+<p>
+  <a href="https://cwa.run/clerk"><img src="https://img.shields.io/badge/Clerk-6C47FF?style=for-the-badge&logo=clerk&logoColor=white" alt="Clerk" /></a>&nbsp;
+  <a href="https://cwa.run/polar"><img src="https://img.shields.io/badge/Polar-000000?style=for-the-badge&logo=polar&logoColor=white" alt="Polar" /></a>&nbsp;
+  <a href="https://cwa.run/railway"><img src="https://img.shields.io/badge/Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white" alt="Railway" /></a>&nbsp;
+  <a href="https://cwa.run/sentry"><img src="https://img.shields.io/badge/Sentry-362D59?style=for-the-badge&logo=sentry&logoColor=white" alt="Sentry" /></a>&nbsp;
+  <a href="https://cwa.run/coderabbit"><img src="https://img.shields.io/badge/CodeRabbit-FF6C37?style=for-the-badge&logo=rabbitmq&logoColor=white" alt="CodeRabbit" /></a>&nbsp;
+  <a href="https://cwa.run/prisma"><img src="https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white" alt="Prisma" /></a>
+</p>
+
+</div>
+
+<br />
+
+## Tutorial
+
+[![Watch on YouTube](https://img.shields.io/badge/Watch_the_Full_Course-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://cwa.run/resonance-gh-yt)
+
+Learn how to build this entire project from scratch in a **free 12-hour video course** on YouTube. The tutorial covers every feature  - authentication, text-to-speech, voice cloning, billing, deployment, and more.
+
+Each chapter has a matching branch so you can check out the code at any point in the tutorial:
+
+| Branch | Chapter |
+|--------|---------|
+| `main` | Final project (all chapters combined) |
+| `02-dashboard` | Dashboard layout and navigation |
+| `03-text-to-speech-ui` | Text-to-speech UI |
+| `04-backend-infrastructure` | Backend infrastructure (tRPC, R2, Prisma) |
+| `05-voice-selection` | Voice selection and library |
+| `06-tts-generation-audio-player` | TTS generation and audio player |
+| `07-tts-history-polish` | TTS history and polish |
+| `bonus-sentry-error-monitoring` | Bonus: Sentry error monitoring |
+| `08-voice-management` | Voice management and cloning |
+| `09-billing` | Billing and usage metering |
+
+```bash
+git checkout 04-backend-infrastructure  # example: jump to Chapter 4
+```
+
+## Features
+
+- **Text-to-Speech**  - Generate speech from text with adjustable creativity, variety, expression, and flow parameters
+- **Zero-Shot Voice Cloning**  - Upload or record a voice sample (10s minimum) and clone it instantly  - no fine-tuning required
+- **20 Built-in Voices**  - Pre-seeded system voices across 12 categories and 5 locales
+- **Waveform Audio Player**  - WaveSurfer.js visualization with seek, play/pause, and download
+- **Multi-Tenant**  - Team-based access via Clerk Organizations with full data isolation
+- **Usage-Based Billing**  - Pay-as-you-go character metering with configurable pricing via Polar products and meters
+- **Generation History**  - Browse and replay past generations with preserved voice metadata
+- **Fully Responsive**  - Mobile-first with bottom drawers, compact controls, and adaptive layouts
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js **20.9** or later
+- [Prisma Postgres](https://cwa.run/prisma) database
+- [Clerk](https://cwa.run/clerk) account (with Organizations enabled)
+- [Cloudflare R2](https://cwa.run/cloudflare-r2) bucket
+- [Modal](https://cwa.run/modal) account (for GPU-hosted TTS)
+- [Polar](https://cwa.run/polar) account (for billing)
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/code-with-antonio/resonance.git
+cd resonance
+npm install
+```
+
+### 2. Configure environment
+
+```bash
+cp .env.example .env.local
+```
+
+```env
+# Database
+DATABASE_URL="postgresql://..."
+
+# Chatterbox TTS (Modal)
+CHATTERBOX_API_URL="https://your-modal-endpoint.modal.run"
+CHATTERBOX_API_KEY="your-api-key"
+
+# Clerk
+CLERK_SECRET_KEY="sk_..."
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_..."
+NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
+NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
+
+# Cloudflare R2
+R2_ACCOUNT_ID="your-account-id"
+R2_ACCESS_KEY_ID="your-access-key"
+R2_SECRET_ACCESS_KEY="your-secret-key"
+R2_BUCKET_NAME="your-bucket-name"
+
+# Polar (Billing)
+POLAR_ACCESS_TOKEN="your-polar-token"
+POLAR_SERVER="sandbox"
+POLAR_PRODUCT_ID="your-product-id"
+
+# App
+APP_URL="http://localhost:3000"
+```
+
+### 3. Set up the database
+
+```bash
+npx prisma migrate deploy
+```
+
+### 4. Deploy the TTS engine
+
+The included `chatterbox_tts.py` is adapted from [Modal's official Chatterbox TTS example](https://cwa.run/modal-tts), modified to read voice reference audio directly from your R2 bucket instead of a Modal Volume.
+
+Before deploying, update `chatterbox_tts.py` with your R2 credentials:
+
+```python
+R2_BUCKET_NAME = "<your-r2-bucket-name-here>"
+R2_ACCOUNT_ID = "<your-r2-account-id-here>"
+```
+
+Then create the required secrets in your [Modal dashboard](https://cwa.run/modal-secrets):
+
+| Secret Name | Keys | Description |
+|-------------|------|-------------|
+| `cloudflare-r2` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | R2 API credentials (used for bucket mount) |
+| `chatterbox-api-key` | `CHATTERBOX_API_KEY` | API key to protect the endpoint (use any strong random string) |
+| `hf-token` | `HF_TOKEN` | Hugging Face token (for downloading the Chatterbox model weights) |
+
+Deploy to Modal:
+
+```bash
+modal deploy chatterbox_tts.py
+```
+
+This deploys Chatterbox TTS to a serverless NVIDIA A10G GPU on Modal. The container mounts your R2 bucket read-only for direct access to voice reference audio. Use the resulting Modal URL as `CHATTERBOX_API_URL` in your `.env.local`.
+
+> **Note:** The first request after a period of inactivity may take longer due to cold starts as Modal provisions the GPU container.
+
+Once deployed, generate the type-safe Chatterbox client from the OpenAPI spec:
+
+```bash
+npm run sync-api
+```
+
+### 5. Seed voices
+
+```bash
+npx prisma db seed
+```
+
+Seeds 20 built-in voices to the database and R2. The system voice WAV files are included in the repository and originate from [Modal's voice sample pack](https://modal-cdn.com/blog/audio/chatterbox-tts-voices.zip).
+
+### 6. Run
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Self-Hosting
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Resonance is designed to be self-hosted. You'll need:
 
-## Learn More
+1. **A PostgreSQL database**  - [Prisma Postgres](https://cwa.run/prisma) (recommended), or any managed Postgres
+2. **Cloudflare R2**  - For audio storage (S3-compatible, generous free tier)
+3. **Modal**  - For serverless GPU inference (pay-per-second billing)
+4. **Clerk**  - For authentication and multi-tenancy
+5. **Polar**  - For metered billing (use sandbox mode with card `4242 4242 4242 4242` for testing)
 
-To learn more about Next.js, take a look at the following resources:
+Deploy the Next.js app to any Node.js host (Railway, Docker, etc.).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/                        # Next.js App Router
+│   ├── (dashboard)/            # Protected routes (home, TTS, voices)
+│   ├── api/                    # Audio proxy routes + tRPC handler
+│   ├── sign-in/                # Clerk auth pages
+│   └── sign-up/
+├── components/                 # Shared UI components (shadcn/ui + custom)
+├── features/
+│   ├── dashboard/              # Home page, quick actions
+│   ├── text-to-speech/         # TTS form, audio player, settings, history
+│   ├── voices/                 # Voice library, creation, recording
+│   └── billing/                # Usage display, checkout
+├── hooks/                      # App-wide hooks
+├── lib/                        # Core: db, r2, polar, env, chatterbox client
+├── trpc/                       # tRPC routers, client, server helpers
+├── generated/                  # Prisma client
+└── types/                      # Generated API types
+```
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start dev server |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run lint` | Lint with ESLint |
+| `npm run sync-api` | Regenerate Chatterbox API types from OpenAPI spec |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Acknowledgements
+
+- [Chatterbox TTS](https://github.com/resemble-ai/chatterbox) by Resemble AI - the open-source zero-shot voice cloning model powering speech generation
+- [Modal](https://cwa.run/modal-tts) - serverless GPU deployment example and [voice sample pack](https://modal-cdn.com/blog/audio/chatterbox-tts-voices.zip)
