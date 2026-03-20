@@ -35,7 +35,7 @@ export async function GET(
 
   return new Response(audioResponse.body, {
     headers: {
-      "Content-Type": "audio/wav",
+      "Content-Type": "audio/mpeg",
       "Cache-Control": "private, max-age=3600",
     },
   });

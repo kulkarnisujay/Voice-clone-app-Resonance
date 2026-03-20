@@ -7,13 +7,14 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "./env";
 
-const r2 = new S3Client({
-  region: "auto",
-  endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+export const r2 = new S3Client({
+  region: "ap-northeast-1",
+  endpoint: env.R2_ENDPOINT,
   credentials: {
     accessKeyId: env.R2_ACCESS_KEY_ID,
     secretAccessKey: env.R2_SECRET_ACCESS_KEY,
   },
+  forcePathStyle: true, // required for Supabase Storage S3 compatibility
 });
 
 type UploadAudioOptions = {
