@@ -10,13 +10,13 @@ import asyncio
 import io
 import os
 
-import edge_tts
-import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, Security
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
-from fastapi.security import APIKeyHeader
-from pydantic import BaseModel, Field
+import edge_tts  # type: ignore
+import uvicorn  # type: ignore
+from fastapi import Depends, FastAPI, HTTPException, Security  # type: ignore
+from fastapi.middleware.cors import CORSMiddleware  # type: ignore
+from fastapi.responses import StreamingResponse  # type: ignore
+from fastapi.security import APIKeyHeader  # type: ignore
+from pydantic import BaseModel, Field  # type: ignore
 
 # ---------------------------------------------------------------------------
 # API key auth — mirrors the Chatterbox API contract
@@ -107,7 +107,7 @@ async def generate_speech(request: TTSRequest):
     Voice cloning is not supported — the language is inferred from voice_key.
     """
     print(f"\n[DEBUG] ➔ Incoming TTS Request")
-    print(f"[DEBUG] Prompt: '{request.prompt[:50]}...'")
+    print(f"[DEBUG] Prompt: '{request.prompt[:50]}...'")  # type: ignore
     print(f"[DEBUG] Target Voice/Language Key: {request.voice_key}")
     edge_voice = pick_edge_voice(request.voice_key)
 

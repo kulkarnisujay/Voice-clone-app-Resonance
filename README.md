@@ -1,45 +1,65 @@
-# 🎙️ Resonance: AI Text-to-Speech Platform (Fully Free Stack)
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/b82fb99a-9e73-45ab-a46c-c764edcc9df0" alt="Resonance Dashboard" width="100%" />
 
-Welcome to the **Resonance Clone** codebase! This project has been fully re-engineered from its original structure to operate on a **100% Free Developer Tier** using cutting-edge open-source tools and free APIs.
+  <h1>🎙️ Resonance: AI Text-to-Speech Platform</h1>
+  <p><strong>A fully free, self-hosted, cutting-edge AI Voice Engine & Web Platform.</strong></p>
 
-You do not need a single credit card, expensive GPU rental, or monthly software subscription to run this application!
-
-![Resonance Dashboard](https://github.com/user-attachments/assets/b82fb99a-9e73-45ab-a46c-c764edcc9df0)
-
----
-
-## ✨ Features
-- **100% Free AI TTS Engine:** Powered by a local Python Edge-TTS server instead of an expensive rented Modal/Chatterbox GPU.
-- **Dynamic Next.js 16 Frontend:** Blazing fast React 19 UI with Tailwind CSS v4.
-- **User Authentication:** Fully integrated Clerk Auth (Free Tier).
-- **Postgres Database:** Serverless Postgres via Neon Tech (Free Tier).
-- **Audio Storage:** S3-compatible cloud bucket storage via Supabase (Free Tier) rather than Cloudflare R2.
-- **Bypassed Subscriptions:** The mandatory Polar billing integrations from the original repo have been completely decoupled so you can generate audio for free.
+  <p>
+    <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" />
+    <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+    <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind" />
+    <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+    <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  </p>
+</div>
 
 ---
 
-## 🛠️ The Tech Stack
+## 🌟 Introduction
 
-| Component | Original Service (Paid) | New Service (100% Free) |
+Welcome to **Resonance**! This project is a completely re-engineered AI Text-to-Speech platform. It's designed to run on a **100% Free Developer Tier**, eliminating the need for expensive GPU rentals, monthly subscriptions, or even a credit card.
+
+Whether you're building a side project, an audiobook generator, or just experimenting with voice AI, Resonance gives you a massive headstart.
+
+---
+
+## ✨ Key Highlights
+
+- **💸 100% Free AI TTS Engine:** Uses a local Python FastAPI server equipped with Microsoft Edge-TTS, replacing costly AI APIs like Modal or ElevenLabs.
+- **⚡ Blazing Fast UI:** Built with Next.js 16, React 19, and Tailwind CSS v4 for absolute peak performance.
+- **🔐 Seamless Authentication:** Integrated with Clerk's generous free tier for secure, modern user login.
+- **🗄️ Serverless Database:** Powered by Neon Postgres—fast, free, and robust.
+- **☁️ Cloud Storage:** Utilizes S3-compatible cloud storage via Supabase (Free Tier), making it highly scalable and cheap compared to Cloudflare R2.
+- **🔓 Unrestricted:** We've completely bypassed the original restrictive billing integrations—generate as much audio as you want!
+
+---
+
+## 🛠️ Tech Stack Transformation
+
+Here's how we've architected a premium service with zero running costs:
+
+| Component | Industry Standard (Paid) | **Resonance Stack (100% Free)** |
 | :--- | :--- | :--- |
 | **TTS Engine** | Chatterbox + Modal (A10G GPU) | `edge-tts` (Local FastAPI Server) |
-| **Database** | Prisma Postgres | Neon Postgres |
-| **Storage (S3)** | Cloudflare R2 | Supabase Storage |
-| **Authentication**| Clerk | Clerk |
-| **Billing Gates** | Polar.sh Required | Bypassed / Optional |
+| **Database** | Paid Postgres Instances | Neon Serverless Postgres |
+| **Storage (S3)** | AWS S3 / Cloudflare R2 | Supabase Storage |
+| **Authentication**| Custom Roll / Paid Auth0 | Clerk (Free Tier) |
+| **Billing Gates** | Polar.sh or Stripe Required | Completely Bypassed 🚀 |
 
 ---
 
-## 🚀 How to Run Locally
+## 🚀 Getting Started
 
-Because of the architectural changes, this project requires **two separate processes** to operate: The Next.js frontend and the FastAPI Python TTS generator.
+Since Resonance leverages a high-performance frontend and a dedicated Python AI server, you'll need to run two separate processes locally.
 
-### 1. Prerequisites
+### 📋 Prerequisites
 - **Node.js** (v20+)
 - **Python** (v3.10+)
 
-### 2. Environment Variables
-Rename the `.env.example` file to `.env` (or create one) and configure these services by making free accounts on their respective websites:
+### ⚙️ 1. Environment Configuration
+
+Rename the `.env.example` file to `.env` in the root directory and fill in your free-tier credentials:
 
 ```env
 # Clerk (Auth)
@@ -49,7 +69,7 @@ CLERK_SECRET_KEY=sk_test_...
 # Neon (Database)
 DATABASE_URL=postgresql://neondb_owner:...
 
-# Supabase (Storage) -> Enable S3 in settings!
+# Supabase (Storage) -> Ensure S3 is enabled in settings!
 R2_ENDPOINT=https://your-project.supabase.co/storage/v1/s3
 R2_ACCESS_KEY_ID=your-access-key
 R2_SECRET_ACCESS_KEY=your-secret-key
@@ -60,43 +80,59 @@ CHATTERBOX_API_KEY=resonance-local-dev-key
 CHATTERBOX_API_URL=http://localhost:8000
 ```
 
-### 3. Start the Next.js Frontend
-Open a terminal in the root directory and run:
+---
+
+### 🌐 2. Start the Master Frontend (Next.js)
+
+Open a terminal in the root directory:
+
 ```bash
 # Install Node dependencies
 npm install
 
-# Setup your Neon database and seed standard voices
+# Setup your Neon database schema and seed the default voices
 npx prisma migrate deploy
 npx prisma db seed
 
-# Start the Web App
+# Fire up the Web App
 npm run dev
 ```
 
-### 4. Start the Free Python TTS Engine
-Open a **second terminal** in the root directory and run:
-```bash
-# Create a virtual environment and install dependencies
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1   # (Windows)
-# source .venv/bin/activate    # (Mac/Linux)
+---
 
+### 🧠 3. Start the AI Engine (FastAPI)
+
+Open a **second terminal** in the root directory:
+
+```bash
+# Create a virtual environment and initialize it
+python -m venv .venv
+
+# Activate it
+.\.venv\Scripts\Activate.ps1   # Windows
+# source .venv/bin/activate    # Mac/Linux
+
+# Install the Python dependencies (FastAPI, up-to-date Pyre2 compatibles)
 pip install fastapi uvicorn edge-tts pydantic
 
-# Start the TTS server
+# Launch the TTS Brain
 python local_tts_server.py
 ```
 
-### 5. Play!
-Visit **[http://localhost:3000](http://localhost:3000)** in your browser. You can now log in, view the dashboard, and generate text-to-speech audio permanently for free.
+🎉 **You are ready!** Visit **[http://localhost:3000](http://localhost:3000)** to dive into your personal, fully unlocked AI Voice Studio!
 
 ---
 
-## 💡 Notes on Features
-Because this repository modifies the upstream API to avoid paying for expensive GPU voice-cloning compute models, the Edge-TTS engine powers the backend.
-* **Feature Limit:** True "Voice Cloning" (copying the exact sound of a `.wav` file you upload) is intrinsically disabled by Edge-TTS. 
-* **Fallback Behavior:** If you upload a custom audio file, the database will correctly catalog it. However, when generating audio from it, the Python server will gracefully fallback to a high-quality standard Neural voice (such as an American or British accent based on the language tag you selected).
+## 💡 Important Notes on AI Capabilities
+
+To bypass expensive GPU processing, Resonance's Python server uses **Microsoft Edge-TTS** under the hood. 
+
+- **🚫 Voice Cloning Limitation:** Because Edge-TTS is a purely neural text-to-speech network, it does not support one-shot voice cloning from audio files (`.wav`).
+- **🛡️ Graceful Fallbacks:** If you attempt to upload a custom voice clone, the database will safely index it. However, the generator will gracefully fall back to a beautiful, studio-quality native neural voice (matching the requested accent/language) when asked to synthesize speech.
 
 ---
-*Maintained and curated by [Sujay Kulkarni](https://github.com/kulkarnisujay).*
+
+<div align="center">
+  <p>🛠️ <i>Maintained and curated with ❤️ by <a href="https://github.com/kulkarnisujay">Sujay Kulkarni</a></i></p>
+  <p><b>Star ⭐ this repository if you found it useful!</b></p>
+</div>
