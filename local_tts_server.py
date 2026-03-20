@@ -9,6 +9,9 @@ Run:      uvicorn local_tts_server:app --host 0.0.0.0 --port 8000 --reload
 import asyncio
 import io
 import os
+from dotenv import load_dotenv  # type: ignore
+
+load_dotenv()  # Load environment variables from .env if it exists
 
 import edge_tts  # type: ignore
 import uvicorn  # type: ignore
