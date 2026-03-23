@@ -19,4 +19,13 @@ export const CANONICAL_SYSTEM_VOICE_NAMES = [
   "Marisol",
   "Meera",
   "Walter",
+  // Multi-language system voices
+  "Elena", // Spanish
+  "Jean",  // French
+  "Hans",  // German
+  "Keiko", // Japanese
+  "Zhiqiang", // Chinese
+  "Tiago", // Portuguese
+  "Aarohi", // Marathi
+  "Priya", // Hindi
 ] as const;

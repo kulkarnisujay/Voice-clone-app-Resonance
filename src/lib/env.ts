@@ -18,6 +18,13 @@ export const env = createEnv({
     CHATTERBOX_API_URL: z.url(),
     CHATTERBOX_API_KEY: z.string().min(1),
   },
-  experimental__runtimeEnv: {},
+  client: {
+    NEXT_PUBLIC_CHATTERBOX_API_URL: z.string().url(),
+    NEXT_PUBLIC_CHATTERBOX_API_KEY: z.string().min(1),
+  },
+  experimental__runtimeEnv: {
+    NEXT_PUBLIC_CHATTERBOX_API_URL: process.env.NEXT_PUBLIC_CHATTERBOX_API_URL,
+    NEXT_PUBLIC_CHATTERBOX_API_KEY: process.env.NEXT_PUBLIC_CHATTERBOX_API_KEY,
+  },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });

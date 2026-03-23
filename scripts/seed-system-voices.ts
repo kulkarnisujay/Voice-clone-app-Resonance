@@ -154,6 +154,46 @@ const systemVoiceMetadata: Record<string, VoiceMetadata> = {
     category: "NARRATIVE",
     language: "en-US",
   },
+  Elena: {
+    description: "Clear and warm Spanish voice, perfect for narration",
+    category: "GENERAL",
+    language: "es-ES",
+  },
+  Jean: {
+    description: "Elegant and professional French voice",
+    category: "GENERAL",
+    language: "fr-FR",
+  },
+  Hans: {
+    description: "Strong and clear German voice",
+    category: "GENERAL",
+    language: "de-DE",
+  },
+  Keiko: {
+    description: "Soft and polite Japanese voice",
+    category: "GENERAL",
+    language: "ja-JP",
+  },
+  Zhiqiang: {
+    description: "Formal and articulate Chinese Mandarin voice",
+    category: "GENERAL",
+    language: "zh-CN",
+  },
+  Tiago: {
+    description: "Friendly and natural Portuguese voice",
+    category: "GENERAL",
+    language: "pt-BR",
+  },
+  Aarohi: {
+    description: "Clear and expressive Marathi voice",
+    category: "GENERAL",
+    language: "mr-IN",
+  },
+  Priya: {
+    description: "Warm and professional Hindi voice",
+    category: "GENERAL",
+    language: "hi-IN",
+  },
 };
 
 async function readSystemVoiceAudio(name: string) {

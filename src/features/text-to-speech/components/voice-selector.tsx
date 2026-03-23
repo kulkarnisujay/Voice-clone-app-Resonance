@@ -100,9 +100,14 @@ export function VoiceSelector() {
               {customVoices.map((v) => (
                 <SelectItem key={v.id} value={v.id}>
                   <VoiceAvatar seed={v.id} name={v.name} />
-                  <span className="truncate text-sm font-medium">
-                    {v.name} - {VOICE_CATEGORY_LABELS[v.category]}
-                  </span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="truncate text-sm font-medium">
+                      {v.name} - {VOICE_CATEGORY_LABELS[v.category]}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold">
+                      {v.language}
+                    </span>
+                  </div>
                 </SelectItem>
               ))}
             </SelectGroup>
@@ -116,9 +121,14 @@ export function VoiceSelector() {
               {systemVoices.map((v) => (
                 <SelectItem key={v.id} value={v.id}>
                   <VoiceAvatar seed={v.id} name={v.name} />
-                  <span className="truncate text-sm font-medium">
-                    {v.name} - {VOICE_CATEGORY_LABELS[v.category]}
-                  </span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="truncate text-sm font-medium">
+                      {v.name} - {VOICE_CATEGORY_LABELS[v.category]}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold">
+                      {v.language}
+                    </span>
+                  </div>
                 </SelectItem>
               ))}
             </SelectGroup>

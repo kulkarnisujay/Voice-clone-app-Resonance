@@ -13,6 +13,7 @@ from dotenv import load_dotenv  # type: ignore
 
 load_dotenv()  # Load environment variables from .env if it exists
 
+from typing import Optional, List, Dict
 import edge_tts  # type: ignore
 import uvicorn  # type: ignore
 from fastapi import Depends, FastAPI, HTTPException, Security  # type: ignore
@@ -45,27 +46,47 @@ class TTSRequest(BaseModel):
     norm_loudness: bool = Field(default=True)
 
 # ---------------------------------------------------------------------------
-# Language → Edge TTS voice mapping
-# Covers the 5 locales used by the 20 built-in Resonance voices
+# Dynamic Voice Matching
 # ---------------------------------------------------------------------------
-LANG_VOICE_MAP: dict[str, str] = {
-    "en-US": "en-US-AriaNeural",
-    "en-GB": "en-GB-SoniaNeural",
-    "en-IN": "en-IN-NeerjaNeural",
-    "en-AU": "en-AU-NatashaNeural",
-    "ru-RU": "ru-RU-SvetlanaNeural",
-}
 DEFAULT_VOICE = "en-US-AriaNeural"
+_voices_manager: Optional[edge_tts.VoicesManager] = None
 
-def pick_edge_voice(voice_key: str) -> str:
+async def get_voices_manager() -> edge_tts.VoicesManager:
+    global _voices_manager
+    if _voices_manager is None:
+        _voices_manager = await edge_tts.VoicesManager.create()
+    return _voices_manager
+
+async def pick_edge_voice(voice_key: str) -> str:
     """
-    Extract language hint from voice_key path (e.g. 'voices/system/abc123').
-    Falls back to DEFAULT_VOICE — edge-tts ignores the cloning concept since
-    it's a neural TTS service, not a voice cloning model.
+    Extract language hint from voice_key (e.g. 'es-ES_voices/system/abc123').
+    Matches the locale against available edge-tts voices.
     """
-    for lang_code, edge_voice in LANG_VOICE_MAP.items():
-        if lang_code.lower() in voice_key.lower():
-            return edge_voice
+    # 1. Clean up voice_key and extract potential locale
+    # We expect format: "locale_r2path"
+    parts = voice_key.split("_", 1)
+    target_locale = parts[0] if len(parts) > 1 else ""
+    
+    print(f"[DEBUG] Matching locale: '{target_locale}'")
+
+    if not target_locale:
+        return DEFAULT_VOICE
+
+    manager = await get_voices_manager()
+    
+    # Try to find an exact match for the locale (e.g. 'en-US')
+    # manager is an edge_tts.VoicesManager instance
+    locale_voices = manager.find(Locale=target_locale)
+    if locale_voices:
+        # Return the first available voice for this locale
+        return str(locale_voices[0]["ShortName"])
+
+    # If no exact match, try matching just the language part (e.g. 'en' from 'en-GB')
+    lang_prefix = target_locale.split("-")[0]
+    for v in manager.voices:
+        if v["Locale"].startswith(lang_prefix):
+            return str(v["ShortName"])
+
     return DEFAULT_VOICE
 
 # ---------------------------------------------------------------------------
@@ -112,7 +133,7 @@ async def generate_speech(request: TTSRequest):
     print(f"\n[DEBUG] ➔ Incoming TTS Request")
     print(f"[DEBUG] Prompt: '{request.prompt[:50]}...'")  # type: ignore
     print(f"[DEBUG] Target Voice/Language Key: {request.voice_key}")
-    edge_voice = pick_edge_voice(request.voice_key)
+    edge_voice = await pick_edge_voice(request.voice_key)
 
     try:
         communicate = edge_tts.Communicate(text=request.prompt, voice=edge_voice)
@@ -125,7 +146,10 @@ async def generate_speech(request: TTSRequest):
         audio_buffer.seek(0)
 
         if audio_buffer.getbuffer().nbytes == 0:
-            raise HTTPException(status_code=500, detail="TTS returned empty audio")
+            raise HTTPException(
+                status_code=400, 
+                detail="No audio was received. Please verify that your parameters are correct. (Usually this means the selected voice does not support the language of the prompt text)."
+            )
 
         return StreamingResponse(audio_buffer, media_type="audio/mpeg")
 
@@ -133,6 +157,101 @@ async def generate_speech(request: TTSRequest):
         raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"TTS generation failed: {exc}") from exc
+
+# ---------------------------------------------------------------------------
+# Whisper Transcription
+# ---------------------------------------------------------------------------
+import whisper
+import tempfile
+from fastapi import UploadFile, File as FastFile, Form
+
+_whisper_model = None
+
+def get_whisper_model():
+    global _whisper_model
+    if _whisper_model is None:
+        print("[DEBUG] Loading Whisper 'small' model (better for Hindi/multilingual)...")
+        # 'small' is 244MB, much more accurate for non-English than 'base'
+        _whisper_model = whisper.load_model("small")
+    return _whisper_model
+
+@app.post(
+    "/transcribe",
+    dependencies=[Depends(verify_api_key)]
+)
+async def transcribe_speech(
+    file: UploadFile = FastFile(...),
+    language: Optional[str] = Form(None)  # Allow optional language hint (e.g. 'hi')
+):
+    """
+    Transcribe uploaded audio file using Whisper.
+    Supports many languages and automatically detects it.
+    """
+    print(f"\n[DEBUG] ➔ Incoming Transcription Request")
+    print(f"[DEBUG] File: {file.filename}, Type: {file.content_type}, Hint: {language}")
+
+    try:
+        model = get_whisper_model()
+        
+        # Save uploaded file to a temporary location
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
+            tmp.write(await file.read())
+            tmp_path = tmp.name
+
+        print(f"[DEBUG] Processing transcription (task=transcribe, language={language or 'auto'})...")
+        
+        # We explicitly set task="transcribe" to avoid unwanted translation to English
+        # We pass the language if provided as a hint
+        result = model.transcribe(tmp_path, task="transcribe", language=language)
+        
+        print(f"[DEBUG] Transcription finished.")
+        print(f"[DEBUG] Detected language: {result.get('language')}")
+        print(f"[DEBUG] Text: {result['text'][:100]}...")
+
+        # Clean up temp file
+        os.unlink(tmp_path)
+
+        return {
+            "text": result["text"].strip(),
+            "language": result["language"]
+        }
+
+    except Exception as exc:
+        print(f"[ERR] Transcription failed: {exc}")
+        raise HTTPException(status_code=500, detail=f"Transcription failed: {exc}") from exc
+
+# ---------------------------------------------------------------------------
+# Free Translation
+# ---------------------------------------------------------------------------
+from deep_translator import GoogleTranslator  # type: ignore
+
+class TranslateRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=5000)
+    target_lang: str = Field(..., min_length=2, max_length=10) # 'es', 'fr', 'en', etc.
+
+@app.post(
+    "/translate",
+    dependencies=[Depends(verify_api_key)]
+)
+async def translate_text(request: TranslateRequest):
+    """
+    Translate text using Google Translate (free via deep-translator).
+    """
+    print(f"\n[DEBUG] ➔ Incoming Translation Request")
+    print(f"[DEBUG] Target Language: {request.target_lang}")
+
+    try:
+        # 'auto' correctly identifies source language automatically
+        translated = GoogleTranslator(source='auto', target=request.target_lang).translate(request.text)
+        
+        return {
+            "translated_text": translated,
+            "target_lang": request.target_lang
+        }
+
+    except Exception as exc:
+        print(f"[ERR] Translation failed: {exc}")
+        raise HTTPException(status_code=500, detail=f"Translation failed: {exc}") from exc
 
 
 if __name__ == "__main__":

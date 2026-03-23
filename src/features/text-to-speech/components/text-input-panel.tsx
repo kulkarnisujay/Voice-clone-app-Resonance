@@ -18,6 +18,9 @@ import {
 import { ttsFormOptions } from "./text-to-speech-form";
 import { GenerateButton } from "./generate-button";
 import { PromptSuggestions } from "./prompt-suggestions";
+import { VoiceTranscribeButton } from "./voice-transcribe-button";
+import { TranslationSelector } from "./translation-selector";
+import { SpeechTranslationWizard } from "./speech-translation-wizard";
 
 export function TextInputPanel() {
   const form = useTypedAppFormContext(ttsFormOptions);
@@ -54,6 +57,17 @@ export function TextInputPanel() {
               <VoiceSelectorButton />
             </SettingsDrawer>
             <HistoryDrawer />
+            <SpeechTranslationWizard 
+              onComplete={(t, v) => {
+                form.setFieldValue("text", t);
+                form.setFieldValue("voiceId", v);
+              }}
+              disabled={isSubmitting}
+            />
+            <VoiceTranscribeButton 
+              onTranscribe={(t) => form.setFieldValue("text", t)} 
+              disabled={isSubmitting}
+            />
           </div>
           <GenerateButton
             className="w-full"
@@ -75,6 +89,23 @@ export function TextInputPanel() {
               </span>
             </Badge>
             <div className="flex items-center gap-3">
+              <SpeechTranslationWizard 
+                onComplete={(t, v) => {
+                  form.setFieldValue("text", t);
+                  form.setFieldValue("voiceId", v);
+                }}
+                disabled={isSubmitting}
+              />
+              <div className="h-4 w-px bg-border mx-1 hidden sm:block" />
+              <VoiceTranscribeButton 
+                onTranscribe={(t) => form.setFieldValue("text", t)}
+                disabled={isSubmitting}
+              />
+              <TranslationSelector 
+                text={text} 
+                onTranslate={(t) => form.setFieldValue("text", t)}
+                disabled={isSubmitting}
+              />
               <p className="text-xs tracking-tight">
                 {text.length.toLocaleString()}
                 <span className="text-muted-foreground">
@@ -90,10 +121,14 @@ export function TextInputPanel() {
             </div>
           </div>
         ) : (
-          <div className="hidden lg:block">
-            <PromptSuggestions
-              onSelect={(prompt) => form.setFieldValue("text", prompt)}
-            />
+          <div className="hidden items-center justify-between lg:flex">
+             <PromptSuggestions
+                onSelect={(prompt) => form.setFieldValue("text", prompt)}
+              />
+              <VoiceTranscribeButton 
+                onTranscribe={(t) => form.setFieldValue("text", t)} 
+                disabled={isSubmitting}
+              />
           </div>
         )}
       </div>

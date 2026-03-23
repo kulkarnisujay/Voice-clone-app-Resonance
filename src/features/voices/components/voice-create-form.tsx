@@ -64,12 +64,7 @@ import {
 } from "@/features/voices/data/voice-categories";
 import { VoiceRecorder } from "./voice-recorder";
 
-const LANGUAGE_OPTIONS = locales.all
-  .filter((l) => l.tag && l.tag.includes("-") && l.name)
-  .map((l) => ({
-    value: l.tag,
-    label: l.location ? `${l.name} (${l.location})` : l.name,
-  }));
+import { LANGUAGE_OPTIONS } from "@/features/voices/data/languages";
 
 const voiceCreateFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
